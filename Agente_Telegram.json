@@ -1,0 +1,487 @@
+{
+  "name": "Agente Telegram",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "77949d0f-8c00-4c73-b1fd-4c53c156a247",
+      "name": "Telegram Trigger",
+      "webhookId": "ec81df2e-aa11-4c21-9963-7826809eda0b",
+      "credentials": {
+        "telegramApi": {
+          "id": "zUTUJEtwwOGI0oHl",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.message.text }}",
+        "options": {
+          "systemMessage": "=La fecha actual es: {{ $now.format('yyyy-MM-dd') }}.  \nRecuerda usar esta fecha si el usuario menciona \"hoy\".\n\nEres un agente amigable. Vas a responder de forma clara y útil a las consultas del usuario. Tus funciones principales:\n\n---\n\n1. 📝 Organización de notas de reuniones\n\nSi el usuario envía notas de una reunión, organízalas con este formato:\n\nTema: [Título de la reunión]  \nFecha: [Fecha de la reunión]  \nNotas: [Resumen estructurado de los puntos clave discutidos]  \nPróximos pasos: [Acciones a seguir]\n\n- Si en los “próximos pasos” hay tareas que el usuario debe realizar, sugiere crear nuevas tareas.\n- Antes de agregarlas, confirma con el usuario usando la herramienta **\"crear tareas\"**.\n- Siempre sugiere una tarea de seguimiento para dos días después de la reunión.\n- Usa la herramienta **\"Traer Eventos\"** para recuperar información relevante del calendario y agregarla a las notas, si corresponde.\n\n---\n\n2. 📅 Herramienta: \"Traer Eventos\"\n\nPuedes acceder a todos los eventos del calendario usando esta herramienta.  \nPara usarla correctamente, debes proporcionar los siguientes parámetros:\n\n- **start_date**: Fecha de inicio en formato `YYYY-MM-DD`  \n- **end_date**: Fecha de fin en formato `YYYY-MM-DD`\n\n**Ejemplo**: si el usuario pregunta por eventos “hoy”, debes usar:\n\n- `start_date`: `{{ $now.format('yyyy-MM-dd') }}`\n- `end_date`: `{{ $now.format('yyyy-MM-dd') }}`\n\nSi se mencionan términos como:\n\n- “mañana”: usa la fecha de hoy + 1\n- “ayer”: usa la fecha de hoy - 1\n- “la semana pasada”: recupera eventos desde el lunes hasta el viernes de la semana anterior.\n- “esta semana”: lunes a viernes de la semana actual.\n- “la próxima semana”: lunes a viernes de la semana siguiente.\n\n**Importante:** Siempre genera y pasa los parámetros `start_date` y `end_date` si decides usar la herramienta.\n\n---\n\nLa fecha actual es: **{{ $now.format('yyyy-MM-dd') }}**, por favor no uses otra fecha como referencia al interpretar términos como “hoy”, “mañana” o “ayer”.\n\n---\n3. Herramienta \"Crear eventos\"\n\nCuando se requiera crear un evento, solicita los siguientes datos\nFecha y hora de inicio y fin (formato: AAAA-MM-DD HH:mm:ss)\nTítulo del evento (si no se proporciona, sugiere uno)\nDescripción breve del evento (genérala y confirma antes de guardarla)\n\nAsegúrate de establecer la fecha y hora según la zona horaria del usuario.\n\nLa fecha actual es: **{{ $now.format('yyyy-MM-dd') }}**, por favor no utilices ninguna otra fecha como \"hoy\".\n\n---\n4.  Herramienta \"Traer Correos\"\nPuedes acceder a los correos electrónicos no leídos y responder con un resumen en el siguiente formato:\n\nAsunto: {Asunto del correo}\nDe: {Remitente}\nCC: {Personas en copia}\nResumen: {Breve descripción del contenido del correo}\n\n---\n5.  Herramienta \"Enviar Correo\"\nCuando se solicite enviar un correo, por favor genera un borrador con un asunto conciso basado en la información proporcionada. y si te confirmo que está bien por favor envia el correo.  Por favor siempre firma los correos con el nombre Sandra.\n\n---\n6.  Herramienta \"Crear Tareas\"\nSi el usuario te pide crear tareas, agrégalas a la hoja de Google Sheets con las siguientes columnas:\n\nFecha [Fecha de creación de la tarea]\nActividad [Nombre corto de la tarea]\nDescripción\t[Descripción detallada de la tarea o actividad]\nFecha límite [Fecha límite]\t\nPrioridad [Urgente/Alta/Media/Baja/Backlog]\t\nEstado \t[Not Started/In Progress/Done/Blocked]\n\nSi no se especifica un nombre de tarea, sugiere uno, pero por favor usa un nombre corto pues después buscarás por ese nombre para actualizar el estado de la tarea.\nSi no se indica una fecha límite, sugiere una basada en la prioridad y el tipo de tarea.\nSi la tarea ya existe, pregunta si se debe actualizar en lugar de crear una nueva.\n\n---\n7. Herramienta: \"Traer Tareas\"\nSi el usuario solicita su lista de tareas, priorízalas por fecha de vencimiento y luego por nivel de prioridad\n\nEjemplo de respuesta\nTareas pendientes:\n1.\t[Alta prioridad] Enviar propuesta a cliente (vence mañana)\n2.\t[Media prioridad] Revisar informe mensual (vence en 3 días)\n3.\t[Baja prioridad] Organizar archivos de proyecto (backlog)\n\nSi te piden actualizar el estado de una tarea, busca primero por el nombre de la tarea en el campo Actividad, si encuentras más de una pregunta cuál quiere actualizar"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        440,
+        0
+      ],
+      "id": "19ee652b-c423-4c18-bd02-2daa1abc7308",
+      "name": "AI Agent",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o-mini"
+        },
+        "options": {
+          "maxTokens": 300
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        440,
+        200
+      ],
+      "id": "fe469e7b-b852-451c-99fb-1a6041f48705",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "KYAh0Jl1tvOzJifU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        0
+      ],
+      "id": "026cb53f-3d4f-4e02-8962-a590c2cf8dd1",
+      "name": "Telegram",
+      "webhookId": "dc6944ea-1089-4ff2-bde2-1dc975a0f246",
+      "credentials": {
+        "telegramApi": {
+          "id": "zUTUJEtwwOGI0oHl",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "sandramgs7@gmail.com",
+          "mode": "list",
+          "cachedResultName": "sandramgs7@gmail.com"
+        },
+        "limit": 10,
+        "timeMin": "={{ $fromAI('start_date') + 'T00:00:00.000Z' }}",
+        "timeMax": "={{ $fromAI('end_date') + 'T23:59:59.999Z' }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        640,
+        280
+      ],
+      "id": "f415e315-93ae-4590-a2f5-272022e588f0",
+      "name": "Traer Eventos",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MKSr9a9181HtwxEX",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "sandramgs7@gmail.com",
+          "mode": "list",
+          "cachedResultName": "sandramgs7@gmail.com"
+        },
+        "start": "={{ $fromAI(\"inicio\", \"fecha en la que el evento debe iniciar\") }}",
+        "end": "={{ $fromAI(\"fin\", \"fecha en la que el evento debe finalizar\") }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $fromAI(\"asistentes\", \"Correos de los asistentes a la reunión\") }}"
+          ],
+          "summary": "={{ $fromAI(\"titulo\", \"Título de la reunión\") }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        760,
+        280
+      ],
+      "id": "126606a7-848d-4b65-9b43-de8ae8a2a836",
+      "name": "Crear Evento",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "MKSr9a9181HtwxEX",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "contextWindowLength": "={{ 5 }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        180
+      ],
+      "id": "55c44651-6a92-46cf-880a-cc5f6642295f",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "simple": "={{ true }}",
+        "filters": {
+          "includeSpamTrash": false,
+          "labelIds": [
+            "INBOX",
+            "CATEGORY_PERSONAL"
+          ],
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        280
+      ],
+      "id": "93ba52ec-f054-43e5-97bc-c2dc09cf493f",
+      "name": "Traer Correos",
+      "webhookId": "1dae949f-d7d0-4e85-9ced-4d5b9787e626",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XKZxXde5s78BHw2u",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $fromAI(\"to\",\"correos de los destinatarios\") }}",
+        "subject": "={{ $fromAI(\"subject\",\"Tema del correo, sé conciso\") }}",
+        "emailType": "text",
+        "message": "={{ $fromAI(\"body\",\"Cuerpo o contenido del mensaje\") }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        1000,
+        280
+      ],
+      "id": "35c8f12c-7720-4a8b-a3c7-a834ff92343d",
+      "name": "Enviar Correo",
+      "webhookId": "9d4c5b64-0f25-47bd-9ee1-e8bf0f1e102a",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "XKZxXde5s78BHw2u",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "13jK1fqMCi73dtq_K_Oqxy_o3PJ9sYhjgPz8cg1RnViM",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13jK1fqMCi73dtq_K_Oqxy_o3PJ9sYhjgPz8cg1RnViM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha": "={{ $fromAI(\"fechacrea\",\"fecha de creación de la tarea\") }}",
+            "Actividad": "={{ $fromAI(\"tarea\",\"nombre de la tarea o actividad a crear\") }}",
+            "Descripción": "={{ $fromAI(\"descripcion\",\"descripción de la tarea a crear\") }}",
+            "Fecha límite": "={{ $fromAI(\"fechalimite\",\"fecha limite de la tarea a crear\") }}",
+            "Prioridad ": "={{ $fromAI(\"prioridad\",\"prioridad de la tarea a crear\") }}",
+            "Estado": "={{ $fromAI(\"estado\",\"estado de la tarea a crear\") }}"
+          },
+          "matchingColumns": [
+            "Actividad"
+          ],
+          "schema": [
+            {
+              "id": "Fecha",
+              "displayName": "Fecha",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actividad",
+              "displayName": "Actividad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Fecha límite",
+              "displayName": "Fecha límite",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Prioridad ",
+              "displayName": "Prioridad ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        1140,
+        280
+      ],
+      "id": "56018c67-8317-4a21-a207-6d3fac972cb7",
+      "name": "Crear Tareas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CKiFYnt3kXCdPtRZ",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "13jK1fqMCi73dtq_K_Oqxy_o3PJ9sYhjgPz8cg1RnViM",
+          "mode": "list",
+          "cachedResultName": "Lista Tareas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13jK1fqMCi73dtq_K_Oqxy_o3PJ9sYhjgPz8cg1RnViM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/13jK1fqMCi73dtq_K_Oqxy_o3PJ9sYhjgPz8cg1RnViM/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        1260,
+        280
+      ],
+      "id": "13b0a70b-ce7d-47f9-b638-44dc0d285a3d",
+      "name": "Traer Tareas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "CKiFYnt3kXCdPtRZ",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Eventos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Evento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Correos": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar Correo": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crear Tareas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Traer Tareas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "352e726c-e08f-4893-abcb-d1407905e955",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d5642e8c8f31f68452891c944324d97020df4f14ead2d28fc2440579653181e2"
+  },
+  "id": "CzjCeUeAsR8iV79m",
+  "tags": []
+}
