@@ -4,7 +4,7 @@
   "description": "Proyecto n8n para agente AI en telegram",
   "main": "index.js",
   "scripts": {
-    "test": "n8n"
+    "test": "n8n start"
   },
   "keywords": [],
   "author": "",
